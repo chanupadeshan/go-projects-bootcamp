@@ -21,7 +21,12 @@
 
 			var guess int
 			fmt.Printf("Attempt %d/%d — Enter your guess: ", attempts, maxAttempts)
-			fmt.Scan(&guess)
+			_,err :=fmt.Scan(&guess)
+
+			if err != nil{
+				fmt.Println("Invalid input. Please enter a number.")
+				attempts-- 
+			}
 
 			if guess < secretNumber {
 				fmt.Println("Too low! Try again.")
