@@ -1,6 +1,6 @@
-# 🎯 Lecture: Go Fundamentals via a Guessing Game
+# Lecture: Go Fundamentals via a Guessing Game
 
-This is your first Go project. Let's turn it into a **mini lecture** that covers Go fundamentals clearly and practically.
+This is your first Go project. Let's learn Go fundamentals clearly and practically through this guessing game.
 
 ## Running the Game
 ```bash
@@ -19,6 +19,7 @@ func main() {
 
 * Every Go program starts from `main()`
 * It is the **entry point** (like `main()` in C/Java)
+* No arguments needed for this simple program
 
 ---
 
@@ -34,82 +35,118 @@ import (
 
 ### What each package does:
 
-* `fmt` → input/output (print, scan)
-* `math/rand` → random number generation
-* `time` → used to create a dynamic seed
+| Package | Purpose |
+|---------|---------|
+| `fmt` | Input/output (printing, scanning user input) |
+| `math/rand` | Random number generation |
+| `time` | Time-related functions and current time |
 
-👉 **Concept:** Go uses packages instead of libraries
+**Concept:** Go uses packages to organize reusable code, similar to libraries in other languages.
 
 ---
 
-## 3. Random Number Generation
+## 3. Seeding the Random Number Generator
 
 ```go
 rand.Seed(time.Now().UnixNano())
 secretNumber := rand.Intn(100) + 1
 ```
 
-### Key idea:
+### Understanding Randomness
 
-* `Seed()` initializes randomness
-* Without it → same number every run ❌
-* With it → different number every run ✅
+**What is `rand.Seed()`?**
 
-### Logic:
+* Initializes the random number generator with a starting value
+* `time.Now().UnixNano()` gets the current time in nanoseconds
+* This ensures a different value every time the program runs
 
-* `rand.Intn(100)` → gives 0–99
-* `+1` → converts to **1–100**
+**What is `rand.Intn(100)`?**
+
+* Generates a random integer from 0 to 99
+* The `+ 1` converts it to the range 1 to 100
+
+**Example flow:**
+- `rand.Intn(100)` might give: 0, 45, 99
+- `rand.Intn(100) + 1` gives: 1, 46, 100
 
 ---
 
-## 4. Variables and Types
+## 4. Variables and Type Inference
 
 ```go
 attempts := 0
 maxAttempts := 10
 ```
 
-* `:=` → short variable declaration (Go feature)
-* Type is inferred automatically
+### Understanding Variable Declaration
 
-👉 Example:
+**What does `:=` mean?**
 
-* `attempts` → int (inferred)
-* No need to write `int` explicitly
+* Short variable declaration
+* Both **declares** and **assigns** a value
+* Type is **automatically inferred** from the value
+
+**In this example:**
+- `attempts` is inferred as `int` (because 0 is an integer)
+- `maxAttempts` is inferred as `int` (because 10 is an integer)
+- Go figures out the type without you writing it explicitly
+
+**Why this matters:**
+- Less typing
+- Still type-safe (Go checks types at compile time)
+- More readable code
 
 ---
 
-## 5. Output to User
+## 5. Output to the User
 
 ```go
 fmt.Println("Welcome to the Smart Guessing Game!")
+fmt.Println("I have picked a number between 1 and 100. Can you guess it?")
 ```
 
-* `Println()` → prints with new line
-* `Printf()` → formatted output
+### Understanding Output Functions
 
-### Example from your game:
+**What is `fmt.Println()`?**
+
+* Prints text to the console
+* Automatically adds a new line at the end
+* Perfect for welcome messages and simple output
+
+**Example in the game:**
 
 ```go
 fmt.Printf("Attempt %d/%d — Enter your guess: ", attempts, maxAttempts)
 ```
 
-The `%d` is replaced by the variable value.
+This is `fmt.Printf()` which is **formatted output**.
 
 ---
 
-## 6. Loop (Core Game Logic)
+## 6. The Main Loop Structure
 
 ```go
 for attempts < maxAttempts {
 ```
 
-* Go has **only one loop → `for`**
-* This acts like a `while` loop
+### Understanding the `for` Loop
 
-👉 Logic:
+**Key fact:** Go has **only ONE loop construct** - the `for` loop.
 
-* Repeat until attempts reach limit
+It works in multiple ways:
+* `for condition { }` - acts like a `while` loop
+* `for i := 0; i < 10; i++ { }` - acts like a traditional `for` loop
+* `for { }` - infinite loop
+
+**In this game:**
+- `for attempts < maxAttempts` keeps running while attempts is less than 10
+- The loop repeats until the player runs out of attempts
+
+**What happens inside:**
+1. `attempts++` - increment the attempt counter
+2. Get guess from user
+3. Compare guess with secret number
+4. Give feedback
 
 ---
 
@@ -117,321 +154,318 @@ for attempts < maxAttempts {
 
 ```go
 var guess int
+fmt.Printf("Attempt %d/%d — Enter your guess: ", attempts, maxAttempts)
+_, err := fmt.Scan(&guess)
+```
+
+### Understanding Variable Declaration with `var`
+
+```go
+var guess int
+```
+
+**What does this do?**
+- Declares a variable named `guess`
+- Type is `int` (whole numbers)
+- Does NOT assign a value yet
+- Goes to default zero value: 0
+
+**Why use `var` here instead of `:=`?**
+- We're declaring first, assigning later
+- `:=` requires assignment at declaration
+
+### Understanding User Input
+
+```go
 fmt.Scan(&guess)
 ```
 
-### Important concept:
+**Why the `&` symbol?**
 
-* `&guess` → **memory address (pointer)**
+* `Scan()` needs the **memory address** of the variable
+* `guess` = the variable itself
+* `&guess` = the address of where to store the input
 
-👉 Why?
+**Think of it like this:**
+- Variable = a mailbox
+- `guess` = the mailbox itself
+- `&guess` = the address of the mailbox
+- `Scan()` needs the address to put mail (input) in it
 
-* Go needs the address to store input value
-* `guess` = the value
-* `&guess` = the address where to put it
-
----
-
-## 8. Conditional Logic
+### Understanding Error Handling
 
 ```go
-if guess < secretNumber {
-	fmt.Println("Too low!")
-} else if guess > secretNumber {
-	fmt.Println("Too high!")
-} else {
-	fmt.Printf("Congratulations! ...")
+_, err := fmt.Scan(&guess)
+
+if err != nil {
+    fmt.Println("Invalid input. Please enter a number.")
+    attempts--
 }
 ```
 
-* Standard `if-else`
-* Controls game feedback
+**What does this do?**
+
+* `fmt.Scan()` returns two values:
+  - The number of items successfully scanned
+  - An error value (if something went wrong)
+
+* `_, err :=` means:
+  - `_` ignores the first value (we don't need it)
+  - `err` captures the error value
+
+* `if err != nil` means:
+  - If there's an error (err is not empty)
+  - Print a message and decrement attempts
+
+**Why decrement attempts?**
+- If user enters invalid input, we don't count it as a real attempt
+- They get to try again
 
 ---
 
-## 9. Early Exit (Return)
+## 8. Conditional Logic - Comparing Numbers
+
+```go
+if guess < secretNumber {
+    fmt.Println("Too low! Try again.")
+} else if guess > secretNumber {
+    fmt.Println("Too high! Try again.")
+} else {
+    fmt.Printf("Congratulations! You've guessed the number %d in %d attempts!\n", secretNumber, attempts)
+    return
+}
+```
+
+### Understanding `if-else` Statements
+
+**Three paths in this game:**
+
+1. **If guess is too low:**
+   ```go
+   if guess < secretNumber {
+       fmt.Println("Too low! Try again.")
+   }
+   ```
+   - Compare using `<` operator
+   - Give feedback
+
+2. **Else if guess is too high:**
+   ```go
+   else if guess > secretNumber {
+       fmt.Println("Too high! Try again.")
+   }
+   ```
+   - Compare using `>` operator
+   - Give feedback
+
+3. **Else (guess equals the secret number):**
+   ```go
+   else {
+       fmt.Printf("Congratulations! You've guessed the number %d in %d attempts!\n", secretNumber, attempts)
+       return
+   }
+   ```
+   - Player won!
+   - Print success message with the values
+   - `return` exits the entire program
+
+### Understanding `return`
 
 ```go
 return
 ```
 
-* Ends the program immediately when guessed correctly
+* Stops execution of the current function
+* Since we're in `main()`, this ends the entire program
+* The loop stops immediately
 
 ---
 
-## 10. Game Over Condition
+## 9. Game Over Message
 
 ```go
-fmt.Println("Game Over! ...")
+fmt.Println("Game Over! You've used all your attempts. The secret number was:", secretNumber)
 ```
 
-* Executes only if loop finishes without correct guess
+**When does this execute?**
+
+* Only if the `for` loop ends naturally
+* That means the player used all 10 attempts without guessing correctly
+* Prints the secret number so the player can see what they were trying to find
+
+**Flow:**
+- Loop runs while `attempts < maxAttempts`
+- If attempts reaches 10, the loop condition is false
+- Loop exits
+- This line executes
 
 ---
 
-## 🧠 Core Concepts You Learned
+## Core Concepts Summary
 
-From this ONE project, you covered:
-
-| Concept | Example |
-|---------|---------|
-| Program structure | `func main()` |
-| Packages | `import ("fmt", "math/rand", "time")` |
-| Variables & type inference | `attempts := 0` |
-| Loops | `for attempts < maxAttempts` |
-| Conditions | `if guess < secretNumber` |
-| User input | `fmt.Scan(&guess)` |
-| Pointers | `&guess` |
-| Random numbers | `rand.Intn(100)` |
-| Basic game logic | Guessing mechanics |
-
----
-
-## ⚠️ Important Improvements (Real Developer Thinking)
-
-### 1. Input Validation (VERY IMPORTANT)
-
-**Problem:**
-
-```go
-fmt.Scan(&guess)
-```
-
-* If user enters text → program crashes ❌
-
-**Better approach:**
-
-```go
-_, err := fmt.Scan(&guess)
-if err != nil {
-    fmt.Println("Invalid input! Enter a number.")
-    continue
-}
-```
-
-### 2. Smarter Hint System
-
-Instead of just "Too high/low":
-
-```go
-if guess-secretNumber > 10 {
-	fmt.Println("Way too high!")
-}
-```
-
-👉 Improves UX (User Experience)
-
-### 3. Difficulty Levels (Next Step Idea)
-
-* Easy → 20 attempts
-* Medium → 10 attempts
-* Hard → 5 attempts
+| Concept | What It Does | Example |
+|---------|-------------|---------|
+| `package main` | Entry point of program | `package main` |
+| `import` | Load external code packages | `import ("fmt", "math/rand")` |
+| `rand.Seed()` | Initialize randomness | `rand.Seed(time.Now().UnixNano())` |
+| `rand.Intn()` | Generate random number | `rand.Intn(100)` |
+| `:=` | Declare variable with type inference | `attempts := 0` |
+| `var` | Declare variable with explicit type | `var guess int` |
+| `fmt.Println()` | Print with new line | `fmt.Println("Hello")` |
+| `fmt.Printf()` | Print with formatting | `fmt.Printf("%d", value)` |
+| `fmt.Scan()` | Get user input | `fmt.Scan(&guess)` |
+| `for` loop | Repeat code | `for attempts < max { }` |
+| `if-else` | Conditional execution | `if x > 5 { } else { }` |
+| `return` | Exit function/program | `return` |
 
 ---
 
-# 📚 Detailed Lectures
+# Detailed Lectures
 
-## Lecture: Variables and Types in Go
+## Lecture 1: Variables and Types in Go
 
 ### What is a Variable?
 
-A **variable** is a named storage location in memory. It holds a value that your program can use.
+A **variable** is a named storage location in memory where your program stores data.
 
 Example:
-
 ```go
-var age int = 23
+age := 23
 ```
 
 Here:
-- `age` → variable name
-- `int` → type
-- `23` → value
+- `age` = name of the storage location
+- `23` = the value stored
+- `int` = the type (inferred)
 
 ### What is a Type?
 
 A **type** tells Go what kind of data a variable can store.
 
 Examples:
-- `int` → whole numbers
-- `float64` → decimal numbers
-- `string` → text
-- `bool` → true or false
+- `int` → whole numbers (-1000, 0, 42, 1000)
+- `float64` → decimal numbers (3.14, 9.8, 0.5)
+- `string` → text ("hello", "Go", "123")
+- `bool` → true or false (true, false)
 
-### Why are Types Important?
+### Why Types Matter in Go
 
-Go is a **statically typed language**, meaning the type is known before the program runs. Go checks type correctness at compile time.
+Go is **statically typed**, meaning:
+- Every variable has a type
+- The type is known before the program runs
+- Go checks that you use types correctly
+- You can't assign the wrong type to a variable
 
+Example:
 ```go
 var age int = 20
-age = "hello"  // ERROR! age is int, not string
+age = "hello"  // ERROR - can't assign string to int
 ```
 
-### Ways to Declare Variables in Go
+### Variable Declaration Methods
 
-#### Method 1: Full Form
-
+**Method 1: Full form with `var`**
 ```go
 var age int = 23
 ```
+- Clearest and most explicit
+- Shows the type clearly
+- Can declare without assigning
 
-This is the clearest form. Structure: `var variableName type = value`
-
-#### Method 2: Let Go Infer the Type
-
+**Method 2: Type inference with `var`**
 ```go
-var age = 23  // Go understands 23 is int
+var age = 23
 ```
+- Go figures out it's `int` from the value 23
+- Still using `var` keyword
 
-#### Method 3: Short Declaration (Most Common)
-
+**Method 3: Short declaration with `:=` (most common inside functions)**
 ```go
 age := 23
 ```
+- Both declares and assigns
+- Type is inferred
+- Most concise
+- Only works inside functions
 
-* `:=` both declares and assigns
-* Mostly used inside `main()` or other functions
-* Cannot be used outside functions for package-level variables
+### Default Values (Zero Values)
 
-### Difference between `var` and `:=`
-
-| Feature | `var` | `:=` |
-|---------|-------|------|
-| Form | `var x int = 10` | `x := 10` |
-| Declare & assign later | ✅ Yes | ❌ No |
-| Type inference | ✅ Optional | ✅ Automatic |
-| Where to use | Anywhere | Inside functions |
-
-### Common Basic Types in Go
-
-| Type | Values | Example |
-|------|--------|---------|
-| `int` | Whole numbers | `-5, 20, 1000` |
-| `float64` | Decimal numbers | `3.14, 10.5, -2.7` |
-| `string` | Text | `"hello"`, `"Go"` |
-| `bool` | True or False | `true`, `false` |
-
-### Default Zero Values
-
-If you declare a variable but don't assign a value, Go gives a **zero value**:
+If you declare a variable but don't assign a value:
 
 ```go
-var age int        // 0
-var price float64  // 0
-var name string    // "" (empty)
-var isReady bool   // false
+var age int        // becomes 0
+var name string    // becomes "" (empty)
+var isReady bool   // becomes false
+var price float64  // becomes 0.0
 ```
 
-### Type Inference
-
-Go can often detect the type from the value:
-
-```go
-x := 10          // int
-y := 3.14        // float64
-name := "Chanupa"  // string
-ok := true       // bool
-```
+Each type has a zero value.
 
 ### Type Conversion
 
-If you want to convert one type to another, do it explicitly:
+If you need to change a value from one type to another:
 
 ```go
 var x int = 10
-var y float64 = float64(x)
-fmt.Println(y)  // 10
+var y float64 = float64(x)  // Convert int to float64
 
 var a float64 = 9.8
-var b int = int(a)
-fmt.Println(b)  // 9 (decimal part removed)
+var b int = int(a)  // Convert float64 to int (becomes 9, decimal removed)
 ```
 
-### Variable Naming Best Practices
+Conversion is **explicit** - you must write it.
 
-Good variable names matter:
+### Variable Naming Conventions
 
-❌ Bad:
-```go
-x := 10
-y := 5
-z := x + y
-```
+In Go, use `camelCase` for variable names:
 
-✅ Better:
-```go
-width := 10
-height := 5
-area := width * height
-```
-
-In your code, names like `secretNumber`, `maxAttempts`, and `guess` are excellent.
-
-### Go Naming Convention
-
-Go usually uses:
-- `camelCase` for variable names (not `snake_case`)
-
-Examples:
+Good:
 ```go
 secretNumber
 maxAttempts
 userName
-totalMarks
+playerScore
 ```
 
-### Constants vs Variables
-
-A **variable** can change:
+Not typical in Go:
 ```go
-age := 20
-age = 21  // ✅ OK
+secret_number
+MAX_ATTEMPTS
+UserName
 ```
 
-A **constant** cannot change:
+Good variable names:
+- Clearly describe what they store
+- Use meaningful words
+- Make code easy to understand
+
+### Example from Your Game
+
 ```go
-const pi = 3.14
-pi = 4.0  // ❌ ERROR
+attempts := 0         // Type: int, Value: 0
+maxAttempts := 10     // Type: int, Value: 10
+var guess int         // Type: int, Value: 0 (default)
 ```
-
-### Improvement Idea for Your Game
-
-Your code has:
-```go
-maxAttempts := 10
-```
-
-You could write:
-```go
-const maxAttempts = 10
-```
-
-Why? Because the maximum number of attempts is fixed and won't change.
 
 ---
 
-## Lecture: Output to the User in Go
+## Lecture 2: Output to User in Go
 
-Output is how your program **communicates** with the user.
+### What is Output?
 
-Without output, the user cannot see what's happening.
+Output is how your program **communicates** with the user by showing information on the screen.
 
 ### The `fmt` Package
 
-For output, we use the **`fmt`** package:
+The `fmt` package provides functions for printing output:
 
 ```go
 import "fmt"
 ```
 
-The three main functions are:
-* `fmt.Print()`
-* `fmt.Println()`
-* `fmt.Printf()`
+### Three Main Output Functions
 
-### `fmt.Print()` - No New Line
-
-Prints output **without automatically adding a new line** at the end:
+#### 1. `fmt.Print()` - No New Line
 
 ```go
 fmt.Print("Hello")
@@ -443,9 +477,9 @@ Output:
 HelloWorld
 ```
 
-### `fmt.Println()` - With New Line
+**When to use:** Rarely. Usually you want new lines.
 
-Prints output and **adds a new line** at the end:
+#### 2. `fmt.Println()` - With New Line
 
 ```go
 fmt.Println("Hello")
@@ -458,9 +492,9 @@ Hello
 World
 ```
 
-### `fmt.Printf()` - Formatted Output
+**When to use:** Most common. Simple output that needs readability.
 
-Used for **formatted output**. You can control how values appear:
+#### 3. `fmt.Printf()` - Formatted Output
 
 ```go
 name := "chanupa"
@@ -473,36 +507,28 @@ Output:
 My name is chanupa and I am 23 years old.
 ```
 
-### Why `Printf()` is Powerful
+**When to use:** When you need to insert variable values into text.
 
-You can insert variable values inside a sentence:
+### Format Verbs in `fmt.Printf()`
 
-```go
-fmt.Printf("Attempt %d/%d — Enter your guess: ", attempts, maxAttempts)
-```
+Format verbs are placeholders that get replaced by values:
 
-If `attempts = 3` and `maxAttempts = 10`, output becomes:
-```
-Attempt 3/10 — Enter your guess:
-```
-
-### Common Format Verbs in `Printf()`
-
-| Verb | Use | Example |
-|------|-----|---------|
-| `%d` | Integer | `fmt.Printf("Age: %d", 23)` |
-| `%s` | String | `fmt.Printf("Name: %s", "chanupa")` |
-| `%f` | Float | `fmt.Printf("Price: %f", 99.5)` |
-| `%.2f` | Float with decimals | `fmt.Printf("Price: %.2f", 99.5)` → `99.50` |
-| `%t` | Boolean | `fmt.Printf("Ready: %t", true)` |
+| Verb | Type | Example |
+|------|------|---------|
+| `%d` | Integer | `fmt.Printf("Age: %d", 23)` → `Age: 23` |
+| `%s` | String | `fmt.Printf("Name: %s", "Go")` → `Name: Go` |
+| `%f` | Float | `fmt.Printf("Price: %f", 9.99)` → `Price: 9.990000` |
+| `%.2f` | Float (2 decimals) | `fmt.Printf("Price: %.2f", 9.99)` → `Price: 9.99` |
+| `%t` | Boolean | `fmt.Printf("Ready: %t", true)` → `Ready: true` |
 | `%T` | Type | `fmt.Printf("%T", 10)` → `int` |
 
 ### Special Characters in Output
 
-* `\n` → new line
-* `\t` → tab space
-* `\"` → double quote inside text
-* `%%` → percent sign
+- `\n` → new line
+- `\t` → tab space
+- `\\` → backslash
+- `\"` → double quote
+- `%%` → percent sign
 
 Example:
 ```go
@@ -514,301 +540,378 @@ Output:
 Score: 95%
 ```
 
-### In Your Guessing Game
+### Output in Your Game
 
-You used output for:
+Your game uses output at different stages:
 
+**Welcome message:**
 ```go
 fmt.Println("Welcome to the Smart Guessing Game!")
 ```
+- Greets the player
 
-**Purpose:** Greet the user
-
+**Progress prompt:**
 ```go
 fmt.Printf("Attempt %d/%d — Enter your guess: ", attempts, maxAttempts)
 ```
+- Shows current attempt and max attempts
+- Asks for input
 
-**Purpose:** Show progress and ask for input
-
+**Feedback:**
 ```go
 fmt.Println("Too low! Try again.")
 fmt.Println("Too high! Try again.")
 ```
+- Tells player if guess is too high or low
 
-**Purpose:** Give feedback
-
+**Success:**
 ```go
 fmt.Printf("Congratulations! You've guessed the number %d in %d attempts!\n", secretNumber, attempts)
 ```
+- Celebrates when player wins
 
-**Purpose:** Show final success message
-
-### Good Output Principles
-
-Output should be:
-* ✅ Clear
-* ✅ Short
-* ✅ Helpful
-* ✅ Friendly
-
-❌ Bad:
+**Game over:**
 ```go
-fmt.Println("Error")
+fmt.Println("Game Over! You've used all your attempts. The secret number was:", secretNumber)
 ```
-
-✅ Better:
-```go
-fmt.Println("Invalid input! Please enter a number between 1 and 100.")
-```
+- Tells player the game ended and reveals the number
 
 ---
 
-## Lecture: Taking User Input in Go
-
-User input means getting data from the user while the program is running.
+## Lecture 3: Taking User Input in Go
 
 ### What is User Input?
 
-User input is data entered by the user through the keyboard.
+User input is data that the user enters (usually from keyboard) while the program is running.
 
 Examples:
-* name
-* age
-* number guess
-* password
-* menu choice
+- Number to guess
+- Player name
+- Menu choice
+- Search term
 
-### Basic Input with `fmt.Scan()`
+### The `fmt.Scan()` Function
 
 ```go
-var age int
-fmt.Print("Enter your age: ")
-fmt.Scan(&age)
-fmt.Println("Your age is:", age)
+var guess int
+fmt.Scan(&guess)
 ```
 
-### Why `&age`? (The Most Important Part)
+**What does it do?**
+- Waits for user to type something
+- Reads what the user typed
+- Stores it in the variable
+- Continues the program
+
+### The `&` Symbol (Address Operator)
+
+This is very important:
 
 ```go
 fmt.Scan(&guess)
 ```
 
-We do **not** write `fmt.Scan(guess)`.
+We use `&guess`, NOT just `guess`.
 
-We write `fmt.Scan(&guess)` because:
+**Why?**
 
-* `Scan()` needs the **memory address** of the variable
-* `guess` → the value
-* `&guess` → the address of `guess`
+Think of it like mailing something:
+- `guess` = a mailbox
+- `&guess` = the address of the mailbox
+- `fmt.Scan()` needs the address to put data into that mailbox
 
-**Simple meaning:** `Scan()` stores the user's input into that memory location.
+Go's `Scan()` function needs to know **where** to put the input value.
 
-Think like this:
-* Variable = a box
-* Value = what is inside the box
-* `&variable` = the location of the box
+### Input with Different Types
 
-`fmt.Scan()` needs to know **where to put the input**.
-
-### Input Variable Must Have Suitable Type
-
+**Reading an integer:**
 ```go
 var age int
 fmt.Scan(&age)
 ```
+User enters: `25`
+Result: `age = 25`
 
-This expects an integer input like `23`.
-
-If user enters `hello`, that's invalid for `int`.
-
-The variable type matters!
-
-### Input with Different Types
-
-**String input:**
+**Reading a string:**
 ```go
 var name string
 fmt.Scan(&name)
 ```
+User enters: `Alice`
+Result: `name = "Alice"`
 
-**Float input:**
+**Reading a float:**
 ```go
 var price float64
 fmt.Scan(&price)
 ```
+User enters: `9.99`
+Result: `price = 9.99`
 
-**Boolean input:**
+**Reading a boolean:**
 ```go
 var isReady bool
 fmt.Scan(&isReady)
 ```
+User enters: `true`
+Result: `isReady = true`
 
-Valid input: `true` or `false`
-
-### Taking Multiple Inputs
-
-`fmt.Scan()` can read more than one value:
+### Reading Multiple Values
 
 ```go
 var name string
 var age int
 
-fmt.Print("Enter name and age: ")
 fmt.Scan(&name, &age)
-
-fmt.Println("Name:", name, "Age:", age)
 ```
 
-Input:
-```
-chanupa 23
-```
+User enters: `Alice 25`
+Result: `name = "Alice"`, `age = 25`
 
-Output:
-```
-Name: chanupa Age: 23
-```
+### Important Behavior - Spaces
 
-### Important Behavior
+`fmt.Scan()` stops reading at spaces:
 
-`fmt.Scan()` separates input by **spaces**.
-
-If you do:
 ```go
 var fullName string
 fmt.Scan(&fullName)
 ```
 
-And user types: `chanupa Perera`
+User enters: `Alice Smith`
+Result: `fullName = "Alice"` (only first word!)
 
-Only `chanupa` is stored!
+This is how `Scan()` separates multiple inputs.
 
-### When to Use `fmt.Scan()`
-
-✅ Good for:
-* One word
-* Numbers
-* Multiple small values
-
-❌ Not ideal for:
-* Full sentences
-* Full names with spaces
-* Paragraph input
-
-### Handling Input Errors
-
-This is **very important** for real programs:
+### Error Handling with `fmt.Scan()`
 
 ```go
 _, err := fmt.Scan(&guess)
 
 if err != nil {
-    fmt.Println("Invalid input! Please enter a number.")
-    return
+    fmt.Println("Invalid input. Please enter a number.")
 }
 ```
 
-### Better Version for Games
+**What does this mean?**
 
-In games, you usually don't want to end the whole program on bad input:
+- `fmt.Scan()` returns two values
+- First value: how many items were successfully read (we ignore with `_`)
+- Second value: error information
+
+If something goes wrong (user enters text when expecting number):
+- `err` is not `nil`
+- We can detect and handle it
+
+### Example in Your Game
 
 ```go
 _, err := fmt.Scan(&guess)
 
 if err != nil {
-    fmt.Println("Invalid input! Please enter a number.")
-    continue  // Try again
+    fmt.Println("Invalid input. Please enter a number.")
+    attempts--
 }
 ```
 
-### In Your Guessing Game
-
-Your code:
-```go
-var guess int
-fmt.Print("Attempt %d/%d - Enter your guess: ", attempts, maxAttempts)
-fmt.Scan(&guess)
-```
-
-**Better version:**
-```go
-var guess int
-fmt.Printf("Attempt %d/%d - Enter your guess: ", attempts, maxAttempts)
-
-_, err := fmt.Scan(&guess)
-if err != nil {
-    fmt.Println("Invalid input! Please enter a number.")
-    continue
-}
-```
-
-This prevents crashes from bad input.
-
-### Input Flow in Your Game
-
-1. Program asks for input with `Printf()`
-2. User types a number
-3. `Scan()` reads it and stores in `guess`
-4. Program compares `guess` with `secretNumber`
-5. Program gives feedback
-
-**Input** is the bridge between user action and program logic.
-
-### Common Beginner Mistakes
-
-❌ **Mistake 1:** Forgetting `&`
-```go
-fmt.Scan(guess)  // WRONG
-```
-
-✅ Correct:
-```go
-fmt.Scan(&guess)  // RIGHT
-```
-
-❌ **Mistake 2:** Wrong type expectation
-```go
-var age int
-fmt.Scan(&age)
-```
-If user types `"hello"` → error
-
-❌ **Mistake 3:** Expecting full sentence
-```go
-var text string
-fmt.Scan(&text)
-```
-Input: `hello world`
-Stored: `hello` (only first word!)
+**Flow:**
+1. Try to read an integer into `guess`
+2. If it fails → show error message
+3. Decrement attempts so invalid input doesn't count
 
 ---
 
-## Summary
+## Lecture 4: Loops in Go
 
-### Key Functions
+### What is a Loop?
 
-| Function | Behavior | When to Use |
-|----------|----------|------------|
-| `fmt.Print()` | No new line | Rarely needed |
-| `fmt.Println()` | With new line | Simple output |
-| `fmt.Printf()` | Formatted | Professional output |
-| `fmt.Scan()` | Read input | Get user data |
+A loop is code that **repeats** multiple times.
 
-### Key Concepts
+### The `for` Loop
 
-| Concept | Example | Importance |
-|---------|---------|-----------|
-| Variable | `age := 23` | Store data |
-| Type | `int`, `string`, etc. | Ensure correctness |
-| `&address` | `&guess` | Pass to `Scan()` |
-| Format verbs | `%d`, `%s`, `%f` | Format output |
-| Error handling | `if err != nil` | Robust programs |
+Go has **one main loop: `for`**
+
+It works in three ways:
+
+#### Type 1: Condition-based (like while)
+
+```go
+for attempts < maxAttempts {
+    // code repeats while attempts < maxAttempts
+}
+```
+
+In your game, this repeats until the player runs out of attempts.
+
+#### Type 2: Traditional for loop
+
+```go
+for i := 0; i < 10; i++ {
+    // runs 10 times (i goes from 0 to 9)
+}
+```
+
+Three parts:
+- `i := 0` - initialize
+- `i < 10` - condition
+- `i++` - increment
+
+#### Type 3: Infinite loop
+
+```go
+for {
+    // runs forever (need break to exit)
+}
+```
+
+### Your Game's Loop
+
+```go
+for attempts < maxAttempts {
+    attempts++
+    
+    // Ask for guess
+    // Compare with secret number
+    // Give feedback
+    // If correct, return (exit)
+}
+
+// Only reaches here if loop ends normally
+```
+
+**Loop execution:**
+1. Check: is `attempts < maxAttempts`?
+2. If yes: run code inside
+3. Return to step 1
+4. If no: exit loop
+
+**In your game:**
+- Loop runs 10 times maximum
+- But if player guesses correctly, `return` exits the loop early
+- If player uses all 10 attempts, loop ends naturally
 
 ---
 
-## 🚀 Next Steps
+## Lecture 5: Conditional Logic (if-else)
 
-1. ✅ Understand this game thoroughly
-2. ⬜ Add **input validation** so your game doesn't crash
-3. ⬜ Add **difficulty levels** (easy/medium/hard)
-4. ⬜ Move to next project: Inventory Manager
+### What are Conditionals?
+
+Conditionals let your code **make decisions** based on conditions.
+
+### The `if` Statement
+
+```go
+if guess < secretNumber {
+    fmt.Println("Too low! Try again.")
+}
+```
+
+**How it works:**
+1. Check the condition: `guess < secretNumber`
+2. If true: run the code inside `{ }`
+3. If false: skip it
+
+### The `if-else` Statement
+
+```go
+if guess < secretNumber {
+    fmt.Println("Too low!")
+} else {
+    fmt.Println("Not too low!")
+}
+```
+
+**How it works:**
+1. Check condition
+2. If true: run first block
+3. If false: run second block
+
+### The `if-else if-else` Chain
+
+Your game uses this:
+
+```go
+if guess < secretNumber {
+    fmt.Println("Too low!")
+} else if guess > secretNumber {
+    fmt.Println("Too high!")
+} else {
+    fmt.Println("Correct!")
+}
+```
+
+**How it works:**
+1. Check first condition
+2. If true: run first block and stop
+3. If false: check second condition
+4. If true: run second block and stop
+5. If false: run final block
+
+**In your game:**
+- First check: if guess is too low
+- Second check: if guess is too high
+- Final: if neither (meaning guess equals secret)
+
+### Comparison Operators
+
+| Operator | Meaning | Example |
+|----------|---------|---------|
+| `<` | Less than | `x < 10` |
+| `>` | Greater than | `x > 5` |
+| `<=` | Less than or equal | `x <= 10` |
+| `>=` | Greater than or equal | `x >= 0` |
+| `==` | Equal | `x == 5` |
+| `!=` | Not equal | `x != 0` |
+
+### Logical Operators
+
+Combine multiple conditions:
+
+- `&&` means AND (both must be true)
+- `||` means OR (at least one must be true)
+- `!` means NOT (reverse the result)
+
+Example:
+```go
+if x > 0 && x < 100 {
+    // x is between 0 and 100
+}
+```
+
+---
+
+## 🚀 Summary Table
+
+| Concept | In Your Game | Purpose |
+|---------|-------------|---------|
+| Random seed | `rand.Seed(time.Now().UnixNano())` | Make number different each run |
+| Random number | `rand.Intn(100) + 1` | Pick number 1-100 |
+| Variables | `attempts := 0` | Store game state |
+| Output | `fmt.Println()`, `fmt.Printf()` | Communicate with player |
+| Loop | `for attempts < maxAttempts` | Repeat game rounds |
+| Input | `fmt.Scan(&guess)` | Get player's guess |
+| Conditions | `if guess < secretNumber` | Decide what feedback to give |
+| Early exit | `return` | End game when player wins |
+
+---
+
+## You Have Learned
+
+From this one simple game project, you've covered:
+
+- ✅ Program structure and entry point
+- ✅ Packages and imports
+- ✅ Variables and type inference
+- ✅ Random number generation
+- ✅ Output functions (print, println, printf)
+- ✅ Formatted output with format verbs
+- ✅ User input with Scan()
+- ✅ Error handling basics
+- ✅ Loops (for)
+- ✅ Conditionals (if-else)
+- ✅ Comparison operators
+- ✅ Program flow control (return)
+
+These are **fundamental concepts** that you'll use in every Go program!
+
+---
+
